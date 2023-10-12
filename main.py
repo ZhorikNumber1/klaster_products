@@ -3,9 +3,20 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import DBSCAN
 import matplotlib.pyplot as plt
+import sys
+# обработка на правльно введённое название фалйа
 a = input()
-# Загрузка данных
-data = pd.read_csv(a)
+try:
+    # Загрузка данных
+    data = pd.read_csv(a)
+except FileNotFoundError:
+    print("Файл не найден. Пожалуйста, проверьте правильность введенного имени файла.")
+    sys.exit()
+except:
+    print("Произошла неизвестная ошибка при загрузке данных.")
+    sys.exit()
+
+# Если код продолжает выполняться сюда, значит ошибок не было и можно продолжать дальше
 
 # Конвертация даты и времени в нужный формат
 data['created'] = pd.to_datetime(data['created'])
@@ -24,13 +35,12 @@ X = data[["frequency"]].values
 # Нормализация данных
 X = StandardScaler().fit_transform(X)
 
-# Параметры для метода DмSCAN можно подстроить под вашу задачу
+# Параметры для метода DмSCAN
 dbscan = DBSCAN(eps=0.5, min_samples=5)
 data["cluster"] = dbscan.fit_predict(X)
 
-# Назначение скоростей изменений по категориям
-thresholds = [0.1, 1]  # Пороги изменений
-labels = ["None", "slow", "fast"]
+thresholds = [0.05, 0.1, 1]  #пороги изменений
+labels = ["No Change", "A subtle change", "Slow Change", "Fast Change"]
 data["change_rate"] = pd.cut(data["frequency"], bins=[-np.inf] + thresholds + [np.inf], labels=labels)
 
 # Сохранение результатов
@@ -43,5 +53,18 @@ plt.title("Кластеризация данных")
 # Добавление меток к точкам
 for i in range(len(X)):
     plt.annotate(data['cluster'].iloc[i], (X[i, 0], X[i, 0]), textcoords="offset points", xytext=(0,10), ha='center')
+
+plt.show()
+
+
+data = pd.read_csv("clustered_data.csv")
+data["cluster"] = data["cluster"].astype(str)
+data["change_rate"] = data["change_rate"].astype(str)
+
+# Построение гистограммы
+plt.hist(data["change_rate"])
+plt.xlabel("Change Rate")
+plt.ylabel("Count")
+plt.title("Гистограмма кол-ва записей к отнесенному кластеру")
 
 plt.show()

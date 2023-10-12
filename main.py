@@ -47,6 +47,7 @@ data["change_rate"] = pd.cut(data["frequency"], bins=[-np.inf] + thresholds + [n
 data[["url", "cluster", "change_rate"]].to_csv("clustered_data.csv", index=False)
 
 # Визуализация кластеров
+
 plt.scatter(X[:,0], X[:,0], c=data["cluster"])
 plt.title("Кластеризация данных")
 
